@@ -9,7 +9,7 @@ import type {
     Loan,
 } from '../domain/loan';
 
-import { isPositive } from '../domain/money';
+import { assertMoney } from '../domain/money';
 import { LoanRepository } from '../infrastructure/repositories/loan-repository';
 import { InvestmentRepository } from '../infrastructure/repositories/investment-repository';
 import type { AgreementLetterService } from './agreement-letter-service';
@@ -128,7 +128,7 @@ export class LoanService {
             createdInvestment = investment;
 
             const newTotal = currentTotal + input.amount;
-            if (newTotal === loan.principal) {
+            if (newTotal >= loan.principal) {
                 didFund = true;
             }
         });
@@ -184,13 +184,11 @@ function validateCreateLoanInput(input: CreateLoanInput): void {
     if (!input.borrowerId || typeof input.borrowerId !== 'string') {
         throw new ValidationError('borrowerId is required');
     }
-    if (!isPositive(input.principal)) {
-        throw new ValidationError('principal must be a positive integer');
-    }
-    if (typeof input.rate !== 'number' || input.rate < 0) {
+    assertMoney(input.principal, 'principal');
+    if (typeof input.rate !== 'number' || !Number.isFinite(input.rate) || input.rate < 0) {
         throw new ValidationError('rate must be a non negative number');
     }
-    if (typeof input.roi !== 'number' || input.roi < 0) {
+    if (typeof input.roi !== 'number' || !Number.isFinite(input.roi) || input.roi < 0) {
         throw new ValidationError('roi must be a non negative number');
     }
 }
@@ -211,9 +209,7 @@ function validateInvestInput(input: AddInvestmentInput): void {
     if (!input.investorId) {
         throw new ValidationError('investorId is required');
     }
-    if (!isPositive(input.amount)) {
-        throw new ValidationError('amount must be a positive integer');
-    }
+    assertMoney(input.amount, 'amount');
 }
 
 function validateDisburseInput(input: DisburseLoanInput): void {

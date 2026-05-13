@@ -70,6 +70,21 @@ export function registerLoanRoutes(
     );
 }
 
+const PICTURE_PROOF_MIME_TYPES = new Set(['image/jpeg', 'image/png']);
+const SIGNED_AGREEMENT_MIME_TYPES = new Set(['application/pdf', 'image/jpeg']);
+
+function assertAllowedMime(
+    mime: string,
+    allowed: Set<string>,
+    fieldName: string,
+): void {
+    if (!allowed.has(mime.toLowerCase())) {
+        throw new ValidationError(
+            `${fieldName} must be one of: ${[...allowed].join(', ')} (got ${mime || 'unknown'})`,
+        );
+    }
+}
+
 async function parseApproveMultipart(
     req: FastifyRequest,
     fileStorage: FileStorage,
@@ -81,6 +96,7 @@ async function parseApproveMultipart(
     for await (const part of parts) {
         if (part.type === 'file') {
             if (part.fieldname === 'pictureProof') {
+                assertAllowedMime(part.mimetype, PICTURE_PROOF_MIME_TYPES, 'pictureProof');
                 const buffer = await part.toBuffer();
                 const saved = await fileStorage.save(buffer, part.filename, part.mimetype);
                 pictureProofUrl = saved.url;
@@ -114,6 +130,7 @@ async function parseDisburseMultipart(
     for await (const part of parts) {
         if (part.type === 'file') {
             if (part.fieldname === 'signedAgreement') {
+                assertAllowedMime(part.mimetype, SIGNED_AGREEMENT_MIME_TYPES, 'signedAgreement');
                 const buffer = await part.toBuffer();
                 const saved = await fileStorage.save(buffer, part.filename, part.mimetype);
                 signedAgreementUrl = saved.url;
