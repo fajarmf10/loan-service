@@ -10,8 +10,8 @@ import type {
 } from '../domain/loan';
 
 import { isPositive } from '../domain/money';
-import { LoanRepository } from '../repositories/loan-repository';
-import { InvestmentRepository } from '../repositories/investment-repository';
+import { LoanRepository } from '../infrastructure/repositories/loan-repository';
+import { InvestmentRepository } from '../infrastructure/repositories/investment-repository';
 import type { AgreementLetterService } from './agreement-letter-service';
 import type { NotificationService } from './notification-service';
 import { LoanNotFoundError, InvalidStateTransitionError, InvestmentExceedsPrincipalError, ValidationError } from '../domain/error';

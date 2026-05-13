@@ -1,6 +1,6 @@
 import { LoanService } from '../../src/services/loan-service';
-import { LoanRepository } from '../../src/repositories/loan-repository';
-import { InvestmentRepository } from '../../src/repositories/investment-repository';
+import { LoanRepository } from '../../src/infrastructure/repositories/loan-repository';
+import { InvestmentRepository } from '../../src/infrastructure/repositories/investment-repository';
 import type {
     AgreementLetterService,
 } from '../../src/services/agreement-letter-service';
