@@ -1,16 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ValidationError, LoanNotFoundError, InvalidStateTransitionError, InvestmentExceedsPrincipalError } from '../../../src/domain/error';
-import { TestEnv, buildTestEnv } from '../../helpers/build-service';
+import { UnitEnv, buildUnitEnv } from '../../helpers/build-unit-env';
+
 
 describe('LoanService unit', () => {
-    let env: TestEnv;
+    let env: UnitEnv;
 
     beforeEach(() => {
-        env = buildTestEnv();
-    });
-
-    afterEach(() => {
-        env.cleanup();
+        env = buildUnitEnv();
     });
 
     describe('createLoan', () => {
@@ -165,13 +162,15 @@ describe('LoanService unit', () => {
             expect(r.fullyFunded).toBe(true);
             expect(r.loan.state).toBe('invested');
             expect(r.loan.agreementLetterUrl).toMatch(/agreement-/);
+            expect(env.agreementCalls).toHaveLength(1);
+            expect(env.agreementCalls[0].investmentCount).toBe(2);
         });
 
         it('notifies all investors when fully funded', async () => {
             const loan = await setupApprovedLoan(500_000);
             await env.service.invest(loan.id, { investorId: 'inv-1', amount: 200_000 });
             await env.service.invest(loan.id, { investorId: 'inv-2', amount: 300_000 });
-            const sent = env.notification.drain();
+            const sent = env.drainNotifications();
             expect(sent).toHaveLength(2);
             expect(sent.map((s) => s.investorId).sort()).toEqual(['inv-1', 'inv-2']);
         });

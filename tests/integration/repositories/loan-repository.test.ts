@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { openDatabase } from '../../src/db';
-import type { Db } from '../../src/db';
-import { LoanRepository } from '../../src/repositories/loan-repository';
-import type { Loan } from '../../src/domain/loan';
+import { openDatabase } from '../../../src/db';
+import type { Db } from '../../../src/db';
+import { LoanRepository } from '../../../src/repositories/loan-repository';
+import type { Loan } from '../../../src/domain/loan';
 
 describe('LoanRepository integration', () => {
     let db: Db;
