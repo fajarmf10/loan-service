@@ -31,7 +31,7 @@ For a multi node deployment we would need either a stronger isolation level (ser
 
 ## Auto transition to invested
 
-The brief says "invested is once total amount of invested is equal the loan principal". I read this as exact equality. The service checks `newTotal === loan.principal` after each insert. If true, it runs the post commit work:
+The brief says "invested is once total amount of invested is equal the loan principal". The service checks `newTotal >= loan.principal` after each insert. Today the capacity check above prevents over-investment, so `>=` and `===` behave the same; `>=` is defensive so a future change that ever lets amounts drift would still trigger the transition instead of leaving the loan stuck in `approved`. If true, it runs the post commit work:
 
 1. Generate the agreement letter
 2. Update the loan row to `invested` with the agreement url
@@ -53,9 +53,18 @@ Approve and disburse accept both json (with a url) and multipart (with an actual
 
 The file size cap is 10mb and at most 2 files per request. Real production would push uploads to s3 via pre signed urls so the api server never holds the bytes.
 
+Mime type is enforced per field:
+
+- `pictureProof`: `image/jpeg`, `image/png`
+- `signedAgreement`: `application/pdf`, `image/jpeg`
+
+Anything else fails with `VALIDATION_ERROR` before the file hits the disk. Note this is a header trust check, not content sniffing - production would also verify magic bytes.
+
 ## Money
 
 All amounts are integer rupiah. I do not store anything below 1 rupiah. This avoids floating point drift entirely. Inputs must be positive integers, validated both by zod and by the domain validator.
+
+The domain exports a branded `Money` type and an `assertMoney(value, field)` helper that enforces: finite number, integer, positive, and within `Number.MAX_SAFE_INTEGER`. The service-layer validators call `assertMoney` for `principal` and investment `amount`, which gives a clear `ValidationError` (with the offending field name) when callers bypass the http schema. `rate` and `roi` are non money percentages so they are validated separately (finite, non negative) and stay as plain numbers.
 
 ## Time
 
