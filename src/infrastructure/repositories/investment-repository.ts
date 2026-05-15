@@ -1,5 +1,5 @@
-import type { Db } from '../db';
-import type { Investment } from '../domain/loan';
+import type { Db } from '../../db';
+import type { Investment } from '../../domain/loan';
 
 interface InvestmentRow {
     id: string;

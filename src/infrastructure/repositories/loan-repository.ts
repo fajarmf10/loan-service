@@ -1,5 +1,5 @@
-import type { Db } from '../db';
-import type { Loan, LoanState, Approval, Disbursement } from '../domain/loan';
+import type { Db } from '../../db';
+import type { Loan, LoanState, Approval, Disbursement } from '../../domain/loan';
 
 interface LoanRow {
     id: string;
